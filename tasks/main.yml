@@ -1,0 +1,79 @@
+---
+# tasks file for enqack.atlassian_base
+
+- name: Install prerequisites
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - jq
+    - libapr1
+    - pwgen
+    - xml-core
+    - xmlstarlet
+
+- name: Install OpenJDK
+  package:
+    name: openjdk-8-jdk
+    state: present
+
+- name: Download APR based Apache Tomcat Native library source
+  get_url:
+    url: "{{ ab_tomcat_native_download_url }}"
+    dest: "/tmp/tomcat-native-{{ ab_tomcat_native_version }}-src.tar.gz"
+
+- name: Extract Apache Tomcat Native library
+  unarchive:
+    src: "/tmp/tomcat-native-{{ ab_tomcat_native_version }}-src.tar.gz"
+    dest: "/tmp"
+    remote_src: true
+
+- name: Install Apache Tomcat Native library build prerequisites
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - libapr1-dev
+    - libssl-dev
+    - build-essential
+
+- name: Configure Apache Tomcat Native library build environment
+  shell: ./configure --prefix=/usr/local --with-apr=$(which apr-1-config) --with-java-home=/usr/lib/jvm/java-8-openjdk-amd64 --with-ssl=yes
+  args:
+    chdir: "/tmp/tomcat-native-{{ ab_tomcat_native_version }}-src/native"
+
+- name: Build Apache Tomcat Native library
+  shell: make
+  args:
+    chdir: "/tmp/tomcat-native-{{ ab_tomcat_native_version }}-src/native"
+
+- name: Install Apache Tomcat Native library
+  shell: make install
+  args:
+    chdir: "/tmp/tomcat-native-{{ ab_tomcat_native_version }}-src/native"
+
+- name: Remove Apache Tomcat Native library source
+  file:
+    path: "/tmp/tomcat-native-{{ ab_tomcat_native_version }}-src*"
+    state: absent
+
+- name: Add Tomcat Native LIbrary to system lib path
+  file:
+    src: "{{ ab_libtcnative_path }}"
+    dest: /usr/lib/libtcnative-1.so
+    state: link
+
+- name: Ensure atlassian group exists
+  group:
+    name: atlassian
+    state: present
+
+# - name: Add common function scripts
+
+# - name: Add container-metadata script
+
+# - name: Add container-metadata daemon
+
+
+- name: Import cleanup tasks
+  import_tasks: cleanup.yml

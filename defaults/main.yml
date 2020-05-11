@@ -1,0 +1,10 @@
+---
+# defaults file for enqack.atlassian_base
+
+ab_tomcat_native_version: 1.2.21
+
+ab_tomcat_native_download_url: http://mirror.cogentco.com/pub/apache/tomcat/tomcat-connectors/native/{{ ab_tomcat_native_version }}/source/tomcat-native-{{ ab_tomcat_native_version }}-src.tar.gz
+
+ab_jdk_settings_path: /var/cache/oracle-jdk8-installer
+
+ab_libtcnative_path: /usr/local/lib/libtcnative-1.so

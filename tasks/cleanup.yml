@@ -1,0 +1,16 @@
+---
+# tasks file for enqack.atlassian_base
+
+- name: Remove build prerequisites
+  package:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - libapr1-dev
+    - libssl-dev
+    - build-essential
+
+- name: Autoremove apt packages
+  apt:
+    autoremove: true
+  when: ansible_os_family == "Debian"
